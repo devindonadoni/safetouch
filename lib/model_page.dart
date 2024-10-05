@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/constant.dart';
 import 'package:my_app/contatti.dart';
+import 'package:my_app/home_page.dart';
 import 'package:my_app/info.dart';
 import 'package:my_app/maps.dart';
 import 'package:my_app/microfono.dart';
@@ -213,7 +214,7 @@ class ModelPageState extends State<ModelPage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ModelPage()));
+                                  builder: (context) => HomePage()));
                         });
                       },
                       child: Container(

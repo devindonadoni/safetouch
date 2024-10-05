@@ -15,6 +15,8 @@ class InfoState extends State<Info> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        appBar: AppBar(
+        ),
         body: ModelPage(),
       ),
     );
