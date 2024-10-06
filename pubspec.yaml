@@ -15,12 +15,15 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^1.1.0
+  google_fonts: ^6.2.1
+  vibration: ^1.7.0
 
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.9.2
 
   dio: ^5.7.0
   flutter_polyline_points: ^2.1.0
@@ -36,6 +39,12 @@ dev_dependencies:
 flutter:
   assets:
       - assets/
+
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/Jasnic_Logo_SafeTouch.png"
 
 
   uses-material-design: true

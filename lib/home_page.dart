@@ -5,6 +5,7 @@ import 'package:my_app/contatti.dart';
 import 'package:my_app/info.dart';
 import 'package:my_app/maps.dart';
 import 'package:my_app/microfono.dart';
+import 'package:my_app/sos_pressed.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -115,23 +116,27 @@ class HomePageState extends State<HomePage> {
             Expanded(
               child: Center(
                 child: GestureDetector(
-                  onTap: () {
-
+                  onLongPress: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SosPressed()));
                   },
                   child: Container(
+                    decoration: BoxDecoration(
+                    color: PrimaryColor, // Colore del pulsante
+                    shape: BoxShape.circle, // Fa il container circolare
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
                     width: 300, // Larghezza del cerchio
                     height: 300, // Altezza del cerchio (uguale per farlo circolare)
-                    decoration: BoxDecoration(
-                      color: PrimaryColor, // Colore del pulsante
-                      shape: BoxShape.circle, // Fa il container circolare
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
+
                     child: Center(
                       child: Text(
                         'SOS',

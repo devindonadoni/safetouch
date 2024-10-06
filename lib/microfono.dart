@@ -18,8 +18,8 @@ State<Microfono> createState() => MicrofonoState();
 
 class MicrofonoState extends State<Microfono> {
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  @override
+  @override  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
