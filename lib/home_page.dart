@@ -77,31 +77,33 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
               ListTile(
-                leading: Icon(
-                  Icons.home,
+                leading: SvgPicture.asset(
+                  "assets/home.svg",
                   color: PrimaryColor,
                 ),
                 title: Text(
-                  'Home',
+                  'HOME',
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
                   // Azione per Home
-                  Navigator.pop(context); // Chiude il drawer
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HomePage())); // Chiude il drawer
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.settings,
+                leading: SvgPicture.asset(
+                  "assets/permission.svg",
                   color: PrimaryColor,
                 ),
                 title: Text(
-                  'Settings',
+                  'PERMESSI',
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
                   // Azione per Settings
-                  Navigator.pop(context); // Chiude il drawer
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Info())); // Chiude il drawer
                 },
               ),
             ],
@@ -117,26 +119,23 @@ class HomePageState extends State<HomePage> {
               child: Center(
                 child: GestureDetector(
                   onLongPress: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SosPressed()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SosPressed()));
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                    color: PrimaryColor, // Colore del pulsante
-                    shape: BoxShape.circle, // Fa il container circolare
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                    width: 300, // Larghezza del cerchio
-                    height: 300, // Altezza del cerchio (uguale per farlo circolare)
-
+                      color: PrimaryColor, // Colore del pulsante
+                      shape: BoxShape.circle, // Fa il container circolare
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    width: 300,
+                    height: 300,
                     child: Center(
                       child: Text(
                         'SOS',
@@ -151,7 +150,6 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-
             Container(
                 margin: EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(

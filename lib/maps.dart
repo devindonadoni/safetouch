@@ -80,31 +80,33 @@ class MapsState extends State<Maps> {
                 ),
               ),
               ListTile(
-                leading: Icon(
-                  Icons.home,
+                leading: SvgPicture.asset(
+                  "assets/home.svg",
                   color: PrimaryColor,
                 ),
                 title: Text(
-                  'Home',
+                  'HOME',
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
                   // Azione per Home
-                  Navigator.pop(context); // Chiude il drawer
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HomePage())); // Chiude il drawer
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.settings,
+                leading: SvgPicture.asset(
+                  "assets/permission.svg",
                   color: PrimaryColor,
                 ),
                 title: Text(
-                  'Settings',
+                  'PERMESSI',
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
                   // Azione per Settings
-                  Navigator.pop(context); // Chiude il drawer
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Info())); // Chiude il drawer
                 },
               ),
             ],

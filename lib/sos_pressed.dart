@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_app/constant.dart';
 import 'package:my_app/home_page.dart';
+import 'call_police.dart';
 import 'help_screen.dart';
 import 'microfono.dart';
 
@@ -49,7 +50,7 @@ class _SosPressedScreenState extends State<SosPressed> with SingleTickerProvider
         // Naviga alla nuova schermata quando il timer raggiunge 0
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => CallPolice()),
         );
       }
     });
@@ -164,3 +165,4 @@ class _SosPressedScreenState extends State<SosPressed> with SingleTickerProvider
     );
   }
 }
+
