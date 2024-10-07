@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
 import 'dart:math';
 
-import 'constant.dart';
-import 'home_page.dart';
-import 'info.dart';
-import 'maps.dart';
-import 'microfono.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:my_app/constant.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:my_app/home_page.dart';
+import 'package:my_app/info.dart';
+import 'package:my_app/maps.dart';
+import 'package:my_app/microfono.dart';
 
 class Contatti extends StatefulWidget {
   const Contatti({super.key});
@@ -20,10 +19,8 @@ class Contatti extends StatefulWidget {
 
 class ContattiState extends State<Contatti> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<Map<String, String>> _contacts = [
-    {"name": "EMERGENZA", "number": "112"},
-    {"name": "EMERGENZA", "number": "118"},
-  ];
+  List<Contact>? _contacts;
+  String? _permissionMessage;
 
   final List<Color> colors = [
     Color(0xFF680505),
@@ -33,29 +30,32 @@ class ContattiState extends State<Contatti> {
     Color(0xFF2f4858),
   ];
 
-  Color? lastColor;
+  Color? lastColor; // Variabile per tenere traccia dell'ultimo colore utilizzato
+
 
   @override
   void initState() {
     super.initState();
-    _loadContacts();
+    _fetchContacts();
   }
 
-  // Load contacts from shared preferences
-  Future<void> _loadContacts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedContacts = prefs.getString('contacts');
-    if (savedContacts != null) {
+  Future<void> _fetchContacts() async {
+    if (await _requestPermission()) {
+      var contacts = await FlutterContacts.getContacts(withProperties: true);
       setState(() {
-        _contacts = List<Map<String, String>>.from(jsonDecode(savedContacts));
+        _contacts = contacts;
+      });
+    } else {
+      setState(() {
+        _permissionMessage =
+        'SAFETOUCH ha bisogno dei permessi per accedere alla rubrica.';
       });
     }
   }
 
-  // Save contacts to shared preferences
-  Future<void> _saveContacts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('contacts', jsonEncode(_contacts));
+  Future<bool> _requestPermission() async {
+    var status = await Permission.contacts.request();
+    return status.isGranted;
   }
 
   @override
@@ -63,16 +63,13 @@ class ContattiState extends State<Contatti> {
     return MaterialApp(
       home: Scaffold(
         key: _scaffoldKey,
-        // Imposta la chiave al Scaffold
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          // Disattiva l'icona predefinita
           title: Row(
             children: [
               GestureDetector(
                 onTap: () {
-                  _scaffoldKey.currentState
-                      ?.openDrawer(); // Usa la chiave per aprire il drawer
+                  _scaffoldKey.currentState?.openDrawer();
                 },
                 child: Container(
                   margin: const EdgeInsets.only(top: 20, left: 20),
@@ -101,7 +98,6 @@ class ContattiState extends State<Contatti> {
           elevation: 0,
         ),
         drawer: Drawer(
-          // Il Drawer, ovvero il menu hamburger
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -127,9 +123,8 @@ class ContattiState extends State<Contatti> {
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
-                  // Azione per Home
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomePage())); // Chiude il drawer
+                      MaterialPageRoute(builder: (context) => HomePage()));
                 },
               ),
               ListTile(
@@ -142,97 +137,106 @@ class ContattiState extends State<Contatti> {
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
-                  // Azione per Settings
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Info())); // Chiude il drawer
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => Info()));
                 },
               ),
             ],
           ),
         ),
+
+        /// BODY
         body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                itemCount: _contacts.length,
-                itemBuilder: (context, index) {
-                  final contact = _contacts[index];
-                  Color randomColor;
-
-                  do {
-                    randomColor = colors[Random().nextInt(colors.length)];
-                  } while (randomColor == lastColor);
-
-                  lastColor = randomColor;
-
-                  String initial = contact["name"]!.isNotEmpty
-                      ? contact["name"]![0].toUpperCase()
-                      : '';
-
-                  return Container(
-                    margin: EdgeInsets.only(left: 35, top: 20, right: 20),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: randomColor,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            initial,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: ListTile(
-                            title: Text(
-                              contact["name"]!,
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            subtitle: Text(contact["number"]!),
-                            onTap: () {
-                              _makePhoneCall(contact["number"]!);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+            if (_permissionMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  _permissionMessage!,
+                  style: TextStyle(color: PrimaryColor),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(bottom: 10, right: 20),
-                  child: FloatingActionButton(
-                    onPressed: () async {
-                      Map<String, String>? newContact = await _showAddContactDialog();
-                      if (newContact != null) {
-                        setState(() {
-                          _contacts.add(newContact);
-                        });
-                        _saveContacts();
-                      }
+            if (_contacts == null)
+              Center(child: CircularProgressIndicator())
+            else
+              if (_contacts!.isEmpty)
+                Center(
+                  child: Text(
+                    "Nessun contatto trovato.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _contacts!.length,
+                    itemBuilder: (context, index) {
+                      final contact = _contacts![index];
+
+                      // Scegli un colore casualmente dall'elenco
+                      Color randomColor;
+                      do {
+                        randomColor = colors[Random().nextInt(colors.length)];
+                      } while (randomColor ==
+                          lastColor); // Assicurati che non sia uguale all'ultimo colore
+
+                      lastColor =
+                          randomColor; // Aggiorna l'ultimo colore utilizzato
+
+                      // Estrai la lettera iniziale del nome del contatto
+                      String initial = contact.displayName.isNotEmpty ? contact
+                          .displayName[0].toUpperCase() : '';
+
+                      return Container(
+                        margin: EdgeInsets.only(left: 35, top: 20),
+                        child: Row(
+                          children: [
+                            // Cerchietto con la lettera iniziale
+                            Container(
+                              width: 50,
+                              // Larghezza del cerchietto
+                              height: 50,
+                              // Altezza del cerchietto
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: randomColor, // Colore scelto
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                initial,
+                                style: TextStyle(
+                                  color: Colors.white, // Colore del testo
+                                  fontSize: 20, // Dimensione del testo
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            // Spazio tra il cerchietto e il ListTile
+                            Expanded(
+                              child: ListTile(
+                                title: Text(
+                                  contact.displayName,
+                                  style: TextStyle(
+                                      color: PrimaryColor, fontSize: 30),
+                                ),
+                                subtitle: Text(
+                                  contact.phones.isNotEmpty
+                                      ? contact.phones.first.number
+                                      : "Nessun numero disponibile",
+                                  style: TextStyle(
+                                      color: PrimaryColor, fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     },
-                    child: Text("+", style: TextStyle(color: BackGroundColor, fontSize: 35),),
-                    backgroundColor: PrimaryColor,
-                    tooltip: 'Aggiungi contatto',
                   ),
                 ),
-              ],
-            ),
-
 
             Container(
                 margin: EdgeInsets.only(bottom: 20),
@@ -412,63 +416,5 @@ class ContattiState extends State<Contatti> {
         ),
       ),
     );
-  }
-
-  Future<Map<String, String>?> _showAddContactDialog() async {
-    String? name;
-    String? number;
-    return showDialog<Map<String, String>>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Aggiungi contatto'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(hintText: 'Nome'),
-                onChanged: (value) {
-                  name = value;
-                },
-              ),
-              TextField(
-                decoration: InputDecoration(hintText: 'Numero'),
-                onChanged: (value) {
-                  number = value;
-                },
-                keyboardType: TextInputType.phone,
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Annulla'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (name != null && number != null) {
-                  Navigator.of(context).pop({
-                    "name": name!,
-                    "number": number!,
-                  });
-                }
-              },
-              child: Text('Aggiungi'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _makePhoneCall(String number) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: number,
-    );
-    await launchUrl(launchUri);
   }
 }
