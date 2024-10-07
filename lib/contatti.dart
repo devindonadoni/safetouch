@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_app/constant.dart';
@@ -20,6 +22,17 @@ class ContattiState extends State<Contatti> {
   List<Contact>? _contacts;
   String? _permissionMessage;
 
+  final List<Color> colors = [
+    Color(0xFF680505),
+    Color(0xFF45355e),
+    Color(0xFF6b0a30),
+    Color(0xFF314160),
+    Color(0xFF2f4858),
+  ];
+
+  Color? lastColor; // Variabile per tenere traccia dell'ultimo colore utilizzato
+
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +47,8 @@ class ContattiState extends State<Contatti> {
       });
     } else {
       setState(() {
-        _permissionMessage = 'SAFETOUCH ha bisogno dei permessi per accedere alla rubrica.';
+        _permissionMessage =
+        'SAFETOUCH ha bisogno dei permessi per accedere alla rubrica.';
       });
     }
   }
@@ -123,8 +137,8 @@ class ContattiState extends State<Contatti> {
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Info()));
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => Info()));
                 },
               ),
             ],
@@ -140,34 +154,89 @@ class ContattiState extends State<Contatti> {
                 padding: const EdgeInsets.all(20.0),
                 child: Text(
                   _permissionMessage!,
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: PrimaryColor),
                   textAlign: TextAlign.center,
                 ),
               ),
             if (_contacts == null)
               Center(child: CircularProgressIndicator())
-            else if (_contacts!.isEmpty)
-              Center(
-                child: Text(
-                  "Nessun contatto trovato.",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              )
             else
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _contacts!.length,
-                  itemBuilder: (context, index) {
-                    final contact = _contacts![index];
-                    return ListTile(
-                      title: Text(contact.displayName),
-                      subtitle: Text(contact.phones.isNotEmpty
-                          ? contact.phones.first.number
-                          : "Nessun numero disponibile"),
-                    );
-                  },
+              if (_contacts!.isEmpty)
+                Center(
+                  child: Text(
+                    "Nessun contatto trovato.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _contacts!.length,
+                    itemBuilder: (context, index) {
+                      final contact = _contacts![index];
+
+                      // Scegli un colore casualmente dall'elenco
+                      Color randomColor;
+                      do {
+                        randomColor = colors[Random().nextInt(colors.length)];
+                      } while (randomColor ==
+                          lastColor); // Assicurati che non sia uguale all'ultimo colore
+
+                      lastColor =
+                          randomColor; // Aggiorna l'ultimo colore utilizzato
+
+                      // Estrai la lettera iniziale del nome del contatto
+                      String initial = contact.displayName.isNotEmpty ? contact
+                          .displayName[0].toUpperCase() : '';
+
+                      return Container(
+                        margin: EdgeInsets.only(left: 35, top: 20),
+                        child: Row(
+                          children: [
+                            // Cerchietto con la lettera iniziale
+                            Container(
+                              width: 50,
+                              // Larghezza del cerchietto
+                              height: 50,
+                              // Altezza del cerchietto
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: randomColor, // Colore scelto
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                initial,
+                                style: TextStyle(
+                                  color: Colors.white, // Colore del testo
+                                  fontSize: 20, // Dimensione del testo
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            // Spazio tra il cerchietto e il ListTile
+                            Expanded(
+                              child: ListTile(
+                                title: Text(
+                                  contact.displayName,
+                                  style: TextStyle(
+                                      color: PrimaryColor, fontSize: 30),
+                                ),
+                                subtitle: Text(
+                                  contact.phones.isNotEmpty
+                                      ? contact.phones.first.number
+                                      : "Nessun numero disponibile",
+                                  style: TextStyle(
+                                      color: PrimaryColor, fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
 
             Container(
                 margin: EdgeInsets.only(bottom: 20),
