@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:my_app/model_page.dart';
-
-import 'constant.dart';
-import 'contatti.dart';
-import 'home_page.dart';
-import 'info.dart';
-import 'maps.dart';
-import 'microfono.dart';
-import 'model_page.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:my_app/constant.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:my_app/home_page.dart';
+import 'package:my_app/info.dart';
+import 'package:my_app/maps.dart';
+import 'package:my_app/microfono.dart';
 
 class Contatti extends StatefulWidget {
   const Contatti({super.key});
@@ -19,8 +16,33 @@ class Contatti extends StatefulWidget {
 }
 
 class ContattiState extends State<Contatti> {
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Contact>? _contacts;
+  String? _permissionMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchContacts();
+  }
+
+  Future<void> _fetchContacts() async {
+    if (await _requestPermission()) {
+      var contacts = await FlutterContacts.getContacts(withProperties: true);
+      setState(() {
+        _contacts = contacts;
+      });
+    } else {
+      setState(() {
+        _permissionMessage = 'SAFETOUCH ha bisogno dei permessi per accedere alla rubrica.';
+      });
+    }
+  }
+
+  Future<bool> _requestPermission() async {
+    var status = await Permission.contacts.request();
+    return status.isGranted;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +51,11 @@ class ContattiState extends State<Contatti> {
         key: _scaffoldKey,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          // Disattiva l'icona predefinita
           title: Row(
             children: [
               GestureDetector(
                 onTap: () {
-                  _scaffoldKey.currentState
-                      ?.openDrawer(); // Usa la chiave per aprire il drawer
+                  _scaffoldKey.currentState?.openDrawer();
                 },
                 child: Container(
                   margin: const EdgeInsets.only(top: 20, left: 20),
@@ -64,7 +84,6 @@ class ContattiState extends State<Contatti> {
           elevation: 0,
         ),
         drawer: Drawer(
-          // Il Drawer, ovvero il menu hamburger
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
@@ -90,9 +109,8 @@ class ContattiState extends State<Contatti> {
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
-                  // Azione per Home
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomePage())); // Chiude il drawer
+                      MaterialPageRoute(builder: (context) => HomePage()));
                 },
               ),
               ListTile(
@@ -105,24 +123,52 @@ class ContattiState extends State<Contatti> {
                   style: TextStyle(color: PrimaryColor),
                 ),
                 onTap: () {
-                  // Azione per Settings
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Info())); // Chiude il drawer
+                      MaterialPageRoute(builder: (context) => Info()));
                 },
               ),
             ],
           ),
         ),
 
-        ///BODY
+        /// BODY
         body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          // Spazio tra gli elementi
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(
-              child: Center(
+            if (_permissionMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  _permissionMessage!,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
+            if (_contacts == null)
+              Center(child: CircularProgressIndicator())
+            else if (_contacts!.isEmpty)
+              Center(
+                child: Text(
+                  "Nessun contatto trovato.",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _contacts!.length,
+                  itemBuilder: (context, index) {
+                    final contact = _contacts![index];
+                    return ListTile(
+                      title: Text(contact.displayName),
+                      subtitle: Text(contact.phones.isNotEmpty
+                          ? contact.phones.first.number
+                          : "Nessun numero disponibile"),
+                    );
+                  },
+                ),
+              ),
+
             Container(
                 margin: EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
@@ -303,4 +349,3 @@ class ContattiState extends State<Contatti> {
     );
   }
 }
-
