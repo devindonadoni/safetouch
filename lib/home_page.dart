@@ -14,8 +14,28 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  double _circleSize = 300;
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inizia il timer non appena viene visualizzata l'activity
+    // Inizializza l'AnimationController
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1000), // Durata di un ciclo di pulsazione
+    )..repeat(reverse: true); // Ripete l'animazione
+
+    // Aggiungi listener per aggiornare la dimensione del cerchio
+    _controller.addListener(() {
+      setState(() {
+        _circleSize = 300 + 20 * _controller.value; // Pulsazione
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +142,7 @@ class HomePageState extends State<HomePage> {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => SosPressed()));
                   },
-                  child: Container(
+                  child: AnimatedContainer(
                     decoration: BoxDecoration(
                       color: PrimaryColor, // Colore del pulsante
                       shape: BoxShape.circle, // Fa il container circolare
@@ -134,17 +154,21 @@ class HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    width: 300,
-                    height: 300,
+                    duration: Duration(milliseconds: 500),
+                    width: _circleSize,
+                    height: _circleSize,
                     child: Center(
-                      child: Text(
-                        'SOS',
-                        style: TextStyle(
-                          color: BackGroundColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 86,
+                      child: Center(
+                        child: Text(
+                          'SOS',
+                          style: TextStyle(
+                            color: BackGroundColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 86,
+                          ),
                         ),
                       ),
+
                     ),
                   ),
                 ),
@@ -330,3 +354,9 @@ class HomePageState extends State<HomePage> {
     );
   }
 }
+
+
+
+/*
+
+ */
